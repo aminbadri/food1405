@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>گزارش هزینه غذا و رزرو سلف‌ها</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap');
+:root{--green:#176b52;--green2:#e9f5ef;--ink:#1e293b;--muted:#64748b;--line:#dbe4e8;--bg:#f4f7f6}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Vazirmatn,Tahoma,sans-serif;line-height:1.8}
+main{max-width:1100px;margin:28px auto;padding:0 16px}.hero{background:linear-gradient(135deg,#135b48,#238365);color:#fff;padding:25px 28px;border-radius:18px;margin-bottom:18px}
+h1{font-size:23px;margin:0 0 6px} .hero p{margin:0;opacity:.92;font-size:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:20px;margin:14px 0;box-shadow:0 5px 18px #0f172a08}
+h2{font-size:17px;margin:0 0 14px;color:#155b47}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+label{display:block;font-weight:600;font-size:13px;margin-bottom:6px}input[type=file],input[type=date],input[type=text],select{font:inherit;font-size:14px;width:100%;border:1px solid #cbd5e1;border-radius:9px;padding:10px;background:#fff;color:var(--ink)}
+small,.hint{color:var(--muted);font-size:12px}.hint{margin-top:6px}
+.filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.datepicker-wrap{position:relative;display:flex;gap:6px;align-items:stretch}
+.datepicker-wrap input{min-width:0;flex:1;font:inherit;font-size:14px;border:1px solid #cbd5e1;border-radius:9px;padding:10px;background:#fff;color:var(--ink);width:100%}
+.calendar-trigger{padding:8px 12px;background:var(--green2);color:#145b47;border:1px solid #cbd5e1;border-radius:9px;flex-shrink:0}
+.persian-calendar{position:absolute;z-index:20;top:calc(100% + 6px);right:0;width:290px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px #0f172a24;padding:12px;display:none}
+.persian-calendar.open{display:block}.cal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.cal-head strong{font-size:14px}.cal-select{max-width:120px;min-width:0;padding:5px;border:1px solid var(--line);border-radius:7px;background:white;color:var(--text);font:inherit}.cal-year{width:78px}.cal-nav{padding:5px 10px;background:#f1f5f9;color:var(--ink);border-radius:7px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;text-align:center}.cal-weekday{font-size:11px;color:var(--muted);padding:4px 0}
+.cal-day{padding:7px 0;background:#fff;color:var(--ink);border:1px solid transparent;border-radius:7px;font-size:12px}.cal-day:hover,.cal-day.selected{background:var(--green);color:#fff}.cal-day.today{border-color:var(--green)}.cal-empty{padding:7px 0}
+
+select[multiple]{min-height:115px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+button{font:inherit;font-weight:600;border:0;border-radius:9px;padding:11px 18px;cursor:pointer}
+.primary{background:var(--green);color:white}.secondary{background:var(--green2);color:#145b47}.primary:disabled{opacity:.45;cursor:not-allowed}
+.status{padding:12px 14px;border-radius:10px;margin-top:14px;background:#f1f5f9;color:#334155;font-size:13px;white-space:pre-line}
+.status.ok{background:#e9f7ef;color:#17603f}.status.err{background:#fff1f2;color:#9f1239}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}.summary-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}.analysis-box{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#f8fafc}.analysis-box h3{margin:0 0 8px;font-size:15px;color:#155b47}.analysis-box ul{margin:6px 0;padding-right:20px}.cost-settings{margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#fbfdfc}.cost-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.cost-fields input{min-width:0}.table-wrap{overflow-x:auto}#categoryBreakdown{width:100%;border-collapse:collapse;min-width:520px;margin-top:8px}#categoryBreakdown th,#categoryBreakdown td{padding:9px 10px;border:1px solid var(--line);text-align:right;white-space:nowrap}#categoryBreakdown thead th,#categoryBreakdown tfoot th{background:#eaf4ef;color:#155b47}#categoryBreakdown tbody tr:nth-child(even){background:#f8fafc}
+.stat{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:12px}.stat span{display:block;color:var(--muted);font-size:12px}.stat strong{font-size:18px}
+footer{font-size:12px;color:var(--muted);padding:8px 2px 28px}
+@media(max-width:700px){.grid,.filters,.summary-stats,.cost-fields{grid-template-columns:1fr}.hero{padding:20px}.stats{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<section class="hero">
+<h1>گزارش هزینه غذا و رزرو سلف‌ها</h1>
+<p>دو فایل اکسل را بارگذاری کنید، فیلترها و ستون قیمت را انتخاب کنید و گزارش نهایی را به‌صورت فایل Excel دریافت کنید.</p>
+</section>
+
+<section class="card">
+<h2>۱. بارگذاری فایل‌ها</h2>
+<div class="grid">
+<div>
+<label for="dataFile">فایل اول: اطلاعات رزرو و مصرف غذا (ستون‌های A تا L)</label>
+<input id="dataFile" type="file" accept=".xlsx,.xls,.csv">
+<div class="hint">ستون‌های A تا L مطابق ترتیب توضیح داده‌شده خوانده می‌شوند.</div>
+</div>
+<div>
+<label for="priceFile">فایل دوم: نوع غذا و پنج ستون قیمت</label>
+<input id="priceFile" type="file" accept=".xlsx,.xls,.csv">
+<div class="hint">ستون A نوع غذا و ستون‌های B تا F قیمت ۱ تا ۵ هستند.</div>
+</div>
+</div>
+<div id="loadStatus" class="status">ابتدا هر دو فایل را انتخاب کنید. پردازش در مرورگر شما انجام می‌شود.</div>
+</section>
+
+<section class="card">
+<h2>۲. تنظیم گزارش</h2>
+<div class="filters">
+<div><label for="startDate">از تاریخ شمسی</label><div class="datepicker-wrap"><input type="text" id="startDate" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۲۳" autocomplete="off"><button type="button" class="calendar-trigger" data-calendar="startDate" aria-label="باز کردن تقویم شمسی">▦</button><div class="persian-calendar" id="calendar-startDate"></div></div><div class="hint">برای انتخاب تاریخ، روی آیکون تقویم کلیک کنید؛ ورود دستی نیز ممکن است.</div></div>
+<div><label for="endDate">تا تاریخ شمسی</label><div class="datepicker-wrap"><input type="text" id="endDate" inputmode="numeric" placeholder="۱۴۰۵/۰۷/۳۰" autocomplete="off"><button type="button" class="calendar-trigger" data-calendar="endDate" aria-label="باز کردن تقویم شمسی">▦</button><div class="persian-calendar" id="calendar-endDate"></div></div><div class="hint">برای انتخاب تاریخ، روی آیکون تقویم کلیک کنید؛ ورود دستی نیز ممکن است.</div></div>
+<div><label for="priceColumn">ستون قیمت مورد استفاده</label>
+<select id="priceColumn">
+<option value="1">قیمت ۱ (ستون B)</option><option value="2">قیمت ۲ (ستون C)</option><option value="3">قیمت ۳ (ستون D)</option><option value="4">قیمت ۴ (ستون E)</option><option value="5">قیمت ۵ (ستون F)</option>
+</select></div>
+<div><label for="canteens">نام سلف (برای انتخاب چند مورد، Ctrl یا Cmd را نگه دارید)</label><select id="canteens" multiple></select><div class="hint">اگر چیزی انتخاب نشود، همه سلف‌ها لحاظ می‌شوند.</div></div>
+<div><label for="meals">وعده غذایی</label><select id="meals" multiple></select><div class="hint">صبحانه، ناهار و شام؛ انتخاب‌نکردن یعنی همه وعده‌ها.</div></div>
+</div>
+<div class="cost-settings">
+<label>هزینه مبنا بر اساس نوع غذا (قابل تنظیم)</label>
+<div class="cost-fields">
+  <div><label for="costHigh">پرهزینه</label><input id="costHigh" type="number" min="0" step="1000" value="350000"></div>
+  <div><label for="costMedium">متوسط هزینه</label><input id="costMedium" type="number" min="0" step="1000" value="250000"></div>
+  <div><label for="costLow">کم‌هزینه</label><input id="costLow" type="number" min="0" step="1000" value="100000"></div>
+</div>
+<div class="hint">مقادیر واردشده در ستون J استفاده می‌شوند و با تغییر آن‌ها، ستون‌های K و L نیز دوباره محاسبه می‌شوند.</div>
+</div>
+<div class="actions">
+<button id="refresh" class="secondary" disabled>اعمال فیلتر و پیش‌نمایش</button>
+<button id="export" class="primary" disabled>دریافت گزارش اکسل</button>
+</div>
+<div id="reportStatus" class="status">پس از بارگذاری موفق فایل‌ها، فیلترها فعال می‌شوند.</div>
+<div id="stats" class="stats" hidden>
+<div class="stat"><span>تعداد ردیف‌های گزارش</span><strong id="count">۰</strong></div>
+<div class="stat"><span>جمع تعداد رزرو</span><strong id="sumQty">۰</strong></div>
+<div class="stat"><span>جمع اختلاف هزینه (ستون L)</span><strong id="sumDiff">۰</strong></div>
+</div>
+<div id="categoryStats" class="summary-stats" hidden>
+<div class="stat"><span>تعداد کل پرس کم‌هزینه</span><strong id="lowQty">۰</strong></div>
+<div class="stat"><span>تعداد کل پرس متوسط‌هزینه</span><strong id="mediumQty">۰</strong></div>
+<div class="stat"><span>تعداد کل پرس پرهزینه</span><strong id="highQty">۰</strong></div>
+</div>
+<div id="categoryBreakdownWrap" class="analysis-box" hidden><h3>تفکیک تعداد پرس و مبلغ بر اساس قیمت انتخابی</h3><div class="table-wrap"><table id="categoryBreakdown"><thead><tr><th>دسته هزینه</th><th>تعداد پرس</th><th>جمع مبلغ بر اساس قیمت انتخابی</th><th>میانگین مبلغ هر پرس</th><th>سهم از کل مبلغ</th></tr></thead><tbody></tbody><tfoot><tr><th>جمع کل همه دسته‌ها</th><th id="allQtyTotal">۰</th><th id="allPriceTotal">۰</th><th id="allAvgPrice">۰</th><th id="allPriceShare">۱۰۰٪</th></tr></tfoot></table></div><p class="hint">مبلغ بر اساس قیمت انتخابی، برابر مجموع ستون I (قیمت انتخابی × تعداد پرس) است. میانگین مبلغ هر پرس از تقسیم جمع مبلغ بر تعداد پرس همان دسته محاسبه می‌شود؛ میانگین کل شامل همه دسته‌ها، از جمله موارد نامشخص، است.</p></div>
+<div id="managementAnalysis" class="analysis-box" hidden><h3>تحلیل مدیریتی</h3><div id="analysisText"></div></div>
+</section>
+<footer>نکته: برای تطبیق قیمت براساس «نام غذا» در ستون E فایل اول با نزدیک‌ترین نام موجود در ستون A فایل قیمت‌ها انجام می‌شود؛ برای نام‌های مشابه، تطبیق تقریبی نیز بررسی می‌شود. فایل خروجی با چینش راست‌به‌چپ و فونت B Nazanin اندازه ۱۲ تنظیم می‌شود؛ اگر این فونت روی سیستم نصب نباشد، Excel فونت جایگزین نشان می‌دهد.</footer>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+let sourceRows=[], priceMap=new Map(), filteredRows=[];
+const faNum=n=>Number(n||0).toLocaleString('fa-IR');
+const norm=s=>String(s??'').trim().replace(/\u200c/g,' ').replace(/\s+/g,' ').toLocaleLowerCase('fa-IR');
+function parseNum(v){ if(typeof v==='number') return v; if(v==null||v==='') return 0; let s=String(v).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[,٬\s]/g,'').replace(/٫/g,'.'); const n=Number(s); return Number.isFinite(n)?n:0; }
+function excelDate(v){
+ if(v instanceof Date && !isNaN(v)) return v;
+ if(typeof v==='number' && v>0){const d=XLSX.SSF.parse_date_code(v);if(d)return new Date(d.y,d.m-1,d.d);}
+ if(v==null||v==='') return null;
+ const s=String(v).trim().replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+ // Detect Persian calendar dates before the generic Gregorian parser.
+ let m=s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+ if(m && +m[1]>=1300 && +m[1]<=1500) return jalaliToDate(+m[1],+m[2],+m[3]);
+ m=s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+ if(m){const d=new Date(+m[1],+m[2]-1,+m[3]);if(!isNaN(d))return d;}
+ const d=new Date(s);return isNaN(d)?null:d;
+}
+function jalaliToDate(jy,jm,jd){
+ jy-=979; jm-=1; jd-=1;
+ const jdm=[31,31,31,31,31,31,30,30,30,30,30,29]; let jdn=365*jy+Math.floor(jy/33)*8+Math.floor((jy%33+3)/4);
+ for(let i=0;i<jm;i++)jdn+=jdm[i];jdn+=jd;
+ let gdn=jdn+79, gy=1600+400*Math.floor(gdn/146097);gdn%=146097;let leap=true;
+ if(gdn>=36525){gdn--;gy+=100*Math.floor(gdn/36524);gdn%=36524;if(gdn>=365)gdn++ ;else leap=false;}
+ gy+=4*Math.floor(gdn/1461);gdn%=1461;
+ if(gdn>=366){leap=false;gdn--;gy+=Math.floor(gdn/365);gdn%=365;}
+ const gd=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];let gm=0;while(gm<12&&gdn>=gd[gm])gdn-=gd[gm++];return new Date(gy,gm,gdn+1);
+}
+function dateInputString(d){if(!d)return '';return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+const jalaliMonths=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+const weekDays=['ش','ی','د','س','چ','پ','ج'];
+const faDigits=n=>String(n).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
+function toAsciiDigits(s){return String(s).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));}
+function currentJalali(){const parts=new Intl.DateTimeFormat('en-US-u-ca-persian-nu-latn',{year:'numeric',month:'numeric',day:'numeric'}).formatToParts(new Date());const o={};parts.forEach(p=>{if(p.type!=='literal')o[p.type]=Number(p.value)});return {y:o.year,m:o.month,d:o.day};}
+function jalaliPartsFromInput(value){const m=toAsciiDigits(value).trim().match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})$/);return m?{y:+m[1],m:+m[2],d:+m[3]}:null;}
+function monthLength(jy,jm){const start=jalaliToDate(jy,jm,1);const next=jm===12?jalaliToDate(jy+1,1,1):jalaliToDate(jy,jm+1,1);return Math.round((next-start)/86400000);}
+function openCalendar(inputId){
+ const panel=$('calendar-'+inputId),input=$(inputId);let parts=jalaliPartsFromInput(input.value)||currentJalali();let year=parts.y,month=parts.m;
+ function draw(){
+  panel.innerHTML='';const head=document.createElement('div');head.className='cal-head';
+  const prev=document.createElement('button');prev.type='button';prev.className='cal-nav';prev.textContent='‹';prev.setAttribute('aria-label','ماه قبل');
+  const monthSelect=document.createElement('select');monthSelect.className='cal-select';monthSelect.setAttribute('aria-label','انتخاب ماه');
+  jalaliMonths.forEach((name,i)=>{const opt=document.createElement('option');opt.value=String(i+1);opt.textContent=name;opt.selected=(i+1===month);monthSelect.append(opt);});
+  const yearSelect=document.createElement('select');yearSelect.className='cal-select cal-year';yearSelect.setAttribute('aria-label','انتخاب سال');
+  for(let y=1300;y<=1500;y++){const opt=document.createElement('option');opt.value=String(y);opt.textContent=faDigits(y);opt.selected=(y===year);yearSelect.append(opt);}
+  monthSelect.onchange=()=>{month=Number(monthSelect.value);draw();};yearSelect.onchange=()=>{year=Number(yearSelect.value);draw();};
+  const next=document.createElement('button');next.type='button';next.className='cal-nav';next.textContent='›';next.setAttribute('aria-label','ماه بعد');
+  prev.onclick=()=>{month--;if(month<1){month=12;year--;}draw();};next.onclick=()=>{month++;if(month>12){month=1;year++;}draw();};head.append(prev,monthSelect,yearSelect,next);panel.append(head);
+  const grid=document.createElement('div');grid.className='cal-grid';weekDays.forEach(d=>{const el=document.createElement('div');el.className='cal-weekday';el.textContent=d;grid.append(el);});
+  const first=jalaliToDate(year,month,1);const offset=(first.getDay()+1)%7;for(let i=0;i<offset;i++){const e=document.createElement('div');e.className='cal-empty';grid.append(e);}
+  const len=monthLength(year,month),today=currentJalali(),chosen=jalaliPartsFromInput(input.value);
+  for(let day=1;day<=len;day++){const b=document.createElement('button');b.type='button';b.className='cal-day';b.textContent=faDigits(day);if(year===today.y&&month===today.m&&day===today.d)b.classList.add('today');if(chosen&&year===chosen.y&&month===chosen.m&&day===chosen.d)b.classList.add('selected');b.onclick=()=>{input.value=`${faDigits(year)}/${faDigits(String(month).padStart(2,'0'))}/${faDigits(String(day).padStart(2,'0'))}`;panel.classList.remove('open');input.dispatchEvent(new Event('change',{bubbles:true}));};grid.append(b);}
+  panel.append(grid);
+ }
+ document.querySelectorAll('.persian-calendar').forEach(p=>p.classList.remove('open'));draw();panel.classList.add('open');
+}
+document.querySelectorAll('[data-calendar]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();openCalendar(b.dataset.calendar);}));
+document.addEventListener('click',e=>{if(!e.target.closest('.datepicker-wrap'))document.querySelectorAll('.persian-calendar').forEach(p=>p.classList.remove('open'));});
+
+async function readSheet(file){
+ const buf=await file.arrayBuffer();const wb=XLSX.read(buf,{type:'array',cellDates:true});const ws=wb.Sheets[wb.SheetNames[0]];
+ return XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null,blankrows:false});
+}
+function cell(row,i){return row&&row[i]!=null?row[i]:'';}
+function buildData(rows){
+ // Supports files with or without a header row; known source columns are positional.
+ const first=rows[0]||[];
+ const looksHeader=norm(first[0]).includes('سلف')||norm(first[1]).includes('تاریخ')||norm(first[4]).includes('غذا');
+ const data=looksHeader?rows.slice(1):rows;
+ return data.filter(r=>r.some(v=>v!==null&&v!=='')).map(r=>({
+  canteen:String(cell(r,0)).trim(),dateRaw:cell(r,1),date:excelDate(cell(r,1)),meal:String(cell(r,2)).trim(),
+  foodType:String(cell(r,3)).trim(),foodName:String(cell(r,4)).trim(),side:String(cell(r,5)).trim(),
+  qty:parseNum(cell(r,6)),original:r
+ }));
+}
+function fillMulti(id,values){const el=$(id);el.innerHTML='';[...new Set(values.filter(v=>String(v).trim()!=='').map(String))].sort((a,b)=>a.localeCompare(b,'fa')).forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;el.appendChild(o);});}
+function selected(id){return [...$(id).selectedOptions].map(o=>o.value);}
+function editDistance(a,b){const dp=Array.from({length:a.length+1},(_,i)=>[i]);for(let j=1;j<=b.length;j++)dp[0][j]=j;for(let i=1;i<=a.length;i++){for(let j=1;j<=b.length;j++){dp[i][j]=Math.min(dp[i-1][j]+1,dp[i][j-1]+1,dp[i-1][j-1]+(a[i-1]===b[j-1]?0:1));}}return dp[a.length][b.length];}
+function foodNameMatch(name){
+ const target=norm(name);if(!target)return null;
+ if(priceMap.has(target))return priceMap.get(target);
+ let best=null,bestScore=0;
+ for(const [key,item] of priceMap.entries()){
+  if(!key)continue;
+  let score=0;
+  if(key.includes(target)||target.includes(key))score=Math.min(key.length,target.length)/Math.max(key.length,target.length)+0.25;
+  else {
+   const a=target.replace(/[^\p{L}\p{N}]/gu,''),b=key.replace(/[^\p{L}\p{N}]/gu,'');
+   const dist=editDistance(a,b),similarity=1-dist/Math.max(a.length,b.length,1);
+   const ta=new Set(a.split(/\s+/)),tb=new Set(b.split(/\s+/));let overlap=0;for(const t of ta)if(tb.has(t))overlap++;
+   const tokenScore=overlap/Math.max(ta.size,tb.size,1);
+   score=Math.max(similarity,tokenScore*0.9);
+  }
+  if(score>bestScore){bestScore=score;best=item;}
+ }
+ return bestScore>=0.48?best:null;
+}
+function priceFor(foodName,col){const item=foodNameMatch(foodName);return item?parseNum(item[col]):null;}
+function baseCost(type, meal=''){
+ const t=norm(type), m=norm(meal);
+ // Explicit classification in the food-type column always takes precedence.
+ if(t.includes('پرهزینه')||t.includes('پرهزينه'))return parseNum($('costHigh').value);
+ if(t.includes('متوسط'))return parseNum($('costMedium').value);
+ if(t.includes('کم هزینه')||t.includes('کم‌هزینه')||t.includes('کم هزينه'))return parseNum($('costLow').value);
+ // Breakfast defaults to low-cost unless the food type explicitly says otherwise.
+ if(m.includes('صبحانه'))return parseNum($('costLow').value);
+ return null;
+}
+function makeReport(){
+ const sText=$('startDate').value.trim(),eText=$('endDate').value.trim();
+ const s=sText?excelDate(sText):null,e=eText?excelDate(eText):null;
+ if(sText&&!s)throw new Error('تاریخ شروع معتبر نیست. تاریخ شمسی را به شکل ۱۴۰۵/۰۷/۲۳ وارد کنید.');
+ if(eText&&!e)throw new Error('تاریخ پایان معتبر نیست. تاریخ شمسی را به شکل ۱۴۰۵/۰۷/۲۳ وارد کنید.');
+ if(s)s.setHours(0,0,0,0); if(e)e.setHours(23,59,59,999);
+ if(s&&e&&s>e)throw new Error('تاریخ شروع نباید بعد از تاریخ پایان باشد.');
+ const cs=selected('canteens'),ms=selected('meals'),col=Number($('priceColumn').value);
+ const missingPrice=new Set(),missingCost=new Set();
+ return sourceRows.filter(r=>{
+  if(cs.length&&!cs.includes(r.canteen))return false;
+  if(ms.length&&!ms.includes(r.meal))return false;
+  if(s||e){if(!r.date)return false;if(s&&r.date<s)return false;if(e&&r.date>e)return false;}
+  return true;
+ }).map(r=>{
+  const p=priceFor(r.foodName,col);if(p===null)missingPrice.add(r.foodName||'(خالی)');
+  const cost=baseCost(r.foodType,r.meal);if(cost===null)missingCost.add(r.foodType||'(خالی)');
+  const price=p===null?0:p,base=cost===null?0:cost;
+  return [r.canteen,r.dateRaw,r.meal,r.foodType,r.foodName,r.side,r.qty,price,price*r.qty,base,base*r.qty,base*r.qty-price*r.qty];
+ }).map(row=>({row, missingPrice:[...missingPrice],missingCost:[...missingCost]}));
+}
+function costCategory(type, meal=''){
+ const t=norm(type),m=norm(meal);
+ if(t.includes('پرهزینه')||t.includes('پرهزينه'))return 'high';
+ if(t.includes('متوسط'))return 'medium';
+ if(t.includes('کم هزینه')||t.includes('کم‌هزینه')||t.includes('کم هزينه'))return 'low';
+ if(m.includes('صبحانه'))return 'low';
+ return 'unknown';
+}
+function summarizeRows(rows){
+ const out={lowQty:0,mediumQty:0,highQty:0,unknownQty:0,lowPriceTotal:0,mediumPriceTotal:0,highPriceTotal:0,unknownPriceTotal:0,baseTotal:0,priceTotal:0,diffTotal:0,rows:rows.length};
+ for(const r of rows){const q=parseNum(r[6]),amount=parseNum(r[8]),cat=costCategory(r[3],r[2]);if(cat==='low'){out.lowQty+=q;out.lowPriceTotal+=amount;}else if(cat==='medium'){out.mediumQty+=q;out.mediumPriceTotal+=amount;}else if(cat==='high'){out.highQty+=q;out.highPriceTotal+=amount;}else{out.unknownQty+=q;out.unknownPriceTotal+=amount;}out.priceTotal+=amount;out.baseTotal+=parseNum(r[10]);out.diffTotal+=parseNum(r[11]);}
+ out.totalQty=out.lowQty+out.mediumQty+out.highQty+out.unknownQty;out.knownQty=out.lowQty+out.mediumQty+out.highQty;out.knownPriceTotal=out.lowPriceTotal+out.mediumPriceTotal+out.highPriceTotal;out.lowAvg=out.lowQty?out.lowPriceTotal/out.lowQty:0;out.mediumAvg=out.mediumQty?out.mediumPriceTotal/out.mediumQty:0;out.highAvg=out.highQty?out.highPriceTotal/out.highQty:0;out.unknownAvg=out.unknownQty?out.unknownPriceTotal/out.unknownQty:0;out.totalAvg=out.totalQty?out.priceTotal/out.totalQty:0;return out;
+}
+function managementLines(sum, rows=filteredRows){
+ const lines=[];
+ const money=n=>faNum(Math.round(n||0));
+ const pct=n=>(n||0).toLocaleString('fa-IR',{maximumFractionDigits:1,minimumFractionDigits:1})+'٪';
+ lines.push(`دامنه گزارش: ${faNum(sum.rows)} ردیف داده و ${faNum(sum.totalQty)} پرس در بازه و فیلترهای انتخاب‌شده بررسی شده است.`);
+ lines.push(`ترکیب هزینه‌ای: کم‌هزینه ${faNum(sum.lowQty)} پرس (${pct(sum.totalQty?sum.lowQty/sum.totalQty*100:0)})، متوسط‌هزینه ${faNum(sum.mediumQty)} پرس (${pct(sum.totalQty?sum.mediumQty/sum.totalQty*100:0)})، پرهزینه ${faNum(sum.highQty)} پرس (${pct(sum.totalQty?sum.highQty/sum.totalQty*100:0)})${sum.unknownQty?` و ${faNum(sum.unknownQty)} پرس با طبقه‌بندی نامشخص (${pct(sum.totalQty?sum.unknownQty/sum.totalQty*100:0)})`:''}.`);
+ lines.push(`مقایسه مالی: جمع مبلغ بر اساس قیمت انتخابی ${money(sum.priceTotal)}، جمع هزینه مبنا ${money(sum.baseTotal)} و اختلاف کل (هزینه مبنا منهای مبلغ قیمت انتخابی) ${money(sum.diffTotal)} است.`);
+ lines.push(`تفکیک مبلغ قیمت انتخابی: کم‌هزینه ${money(sum.lowPriceTotal)}، متوسط‌هزینه ${money(sum.mediumPriceTotal)}، پرهزینه ${money(sum.highPriceTotal)} و جمع کل همه دسته‌ها (با احتساب موارد نامشخص) ${money(sum.priceTotal)} است.`);
+ lines.push(`میانگین مبلغ هر پرس بر اساس قیمت انتخابی (جمع مبلغ تقسیم بر تعداد پرس): کم‌هزینه ${money(sum.lowAvg)}، متوسط‌هزینه ${money(sum.mediumAvg)}، پرهزینه ${money(sum.highAvg)} و میانگین کل ${money(sum.totalAvg)} است. میانگین کل شامل پرس‌های دارای طبقه‌بندی نامشخص نیز می‌شود.`);
+ if(sum.baseTotal>0)lines.push(`اختلاف کل معادل ${pct(sum.diffTotal/sum.baseTotal*100)} از هزینه مبناست. این شاخص برای شناسایی فاصله دو مبنای محاسباتی است و به‌تنهایی سود یا زیان واقعی را نشان نمی‌دهد.`);
+ if(sum.diffTotal>0)lines.push('برداشت: هزینه مبنای محاسبه‌شده از مبلغ قیمت‌گذاری‌شده بیشتر است؛ لازم است مبنای هزینه و قیمت‌های انتخابی با سیاست قیمت‌گذاری و هزینه واقعی غذا تطبیق داده شوند.');
+ else if(sum.diffTotal<0)lines.push('برداشت: مبلغ قیمت‌گذاری‌شده از هزینه مبنای محاسبه‌شده بیشتر است؛ بررسی شود که این اختلاف ناشی از قیمت انتخابی، طبقه‌بندی نوع غذا یا مفروضات هزینه مبناست.');
+ else lines.push('برداشت: مجموع دو مبنای محاسباتی برابر است؛ برابری کل الزاماً به معنی برابری در هر سلف یا هر نوع غذا نیست.');
+ const byCanteen=new Map();
+ for(const r of rows){const name=String(r[0]||'نامشخص');const a=byCanteen.get(name)||{qty:0,base:0,price:0,diff:0,rows:0};a.qty+=parseNum(r[6]);a.price+=parseNum(r[8]);a.base+=parseNum(r[10]);a.diff+=parseNum(r[11]);a.rows++;byCanteen.set(name,a);}
+ const ranked=[...byCanteen.entries()].sort((a,b)=>b[1].qty-a[1].qty);
+ if(ranked.length){
+  const top=ranked[0];lines.push(`بیشترین حجم ثبت‌شده مربوط به سلف «${top[0]}» با ${faNum(top[1].qty)} پرس است (${pct(sum.totalQty?top[1].qty/sum.totalQty*100:0)} از کل پرس‌ها).`);
+  const mostDiff=[...byCanteen.entries()].sort((a,b)=>Math.abs(b[1].diff)-Math.abs(a[1].diff))[0];
+  if(mostDiff)lines.push(`بیشترین اختلاف مطلق تجمیعی بین سلف‌ها مربوط به «${mostDiff[0]}» و برابر با ${money(mostDiff[1].diff)} است؛ این مورد اولویت مناسبی برای بررسی جزئیات غذاها و قیمت‌هاست.`);
+  if(ranked.length>1){const low=[...ranked].sort((a,b)=>a[1].qty-b[1].qty)[0];lines.push(`کمترین حجم ثبت‌شده مربوط به سلف «${low[0]}» با ${faNum(low[1].qty)} پرس است؛ پیش از مقایسه عملکرد، تفاوت تعداد روزهای فعال و ظرفیت سلف‌ها در نظر گرفته شود.`);}
+ }
+ const byFood=new Map();
+ for(const r of rows){const name=String(r[4]||'نامشخص');const a=byFood.get(name)||{qty:0,diff:0,price:0,base:0};a.qty+=parseNum(r[6]);a.diff+=parseNum(r[11]);a.price+=parseNum(r[8]);a.base+=parseNum(r[10]);byFood.set(name,a);}
+ const foods=[...byFood.entries()].sort((a,b)=>b[1].qty-a[1].qty);
+ if(foods.length){const f=foods[0];lines.push(`پرتعدادترین غذای ثبت‌شده «${f[0]}» با ${faNum(f[1].qty)} پرس است؛ پیشنهاد می‌شود تطبیق قیمت این غذا به دلیل اثرگذاری بیشتر بر جمع کل در اولویت باشد.`);}
+ const missingPrice=rows.filter(r=>priceFor(r[4],Number($('priceColumn').value))===null);
+ const missingCost=rows.filter(r=>baseCost(r[3],r[2])===null);
+ if(missingPrice.length)lines.push(`کنترل داده: برای ${faNum(missingPrice.length)} ردیف (${pct(sum.rows?missingPrice.length/sum.rows*100:0)}) قیمت متناظر پیدا نشده و در محاسبه، قیمت صفر لحاظ شده است؛ جمع مالی تا زمان تکمیل قیمت‌ها موقت است.`);
+ if(missingCost.length)lines.push(`کنترل داده: طبقه‌بندی هزینه برای ${faNum(missingCost.length)} ردیف مشخص نیست؛ هزینه مبنای این ردیف‌ها صفر در نظر گرفته شده است. لطفاً نوع غذا را اصلاح یا طبقه‌بندی را تکمیل کنید.`);
+ if(sum.unknownQty)lines.push('پیشنهاد: برای کاهش خطای گزارش، طبقه‌بندی نوع هزینه را در فایل ورودی یکدست کنید و از نوشتارهای متفاوت برای یک دسته (مانند کم‌هزینه/کم هزینه) پرهیز کنید.');
+ if(sum.totalQty>0&&sum.highQty/sum.totalQty>=0.3)lines.push('هشدار مدیریتی: سهم پرس‌های پرهزینه به ۳۰٪ یا بیشتر رسیده است؛ ترکیب منو، قیمت‌گذاری و حجم سفارش این گروه بررسی شود.');
+ lines.push('اقدامات پیشنهادی: ۱) ابتدا ردیف‌های فاقد قیمت یا طبقه‌بندی را اصلاح کنید؛ ۲) سپس سلف‌ها و غذاهای دارای بیشترین اختلاف را بررسی کنید؛ ۳) قیمت‌های انتخابی و هزینه‌های مبنا را با دوره و واحد پول یکسان کنترل کنید؛ ۴) پس از اصلاح، گزارش را دوباره تولید و نتایج را با دوره مشابه مقایسه کنید.');
+ return lines;
+}
+function renderPreview(){
+ try{
+  const result=makeReport();filteredRows=result.map(x=>x.row);
+  $('count').textContent=faNum(filteredRows.length);
+  $('sumQty').textContent=faNum(filteredRows.reduce((s,r)=>s+parseNum(r[6]),0));
+  $('sumDiff').textContent=faNum(filteredRows.reduce((s,r)=>s+parseNum(r[11]),0));
+  $('stats').hidden=false;
+  const summary=summarizeRows(filteredRows);
+  $('lowQty').textContent=faNum(summary.lowQty);$('mediumQty').textContent=faNum(summary.mediumQty);$('highQty').textContent=faNum(summary.highQty);
+  $('categoryStats').hidden=false;$('managementAnalysis').hidden=false;$('categoryBreakdownWrap').hidden=false;
+  const catRows=[['کم‌هزینه',summary.lowQty,summary.lowPriceTotal,summary.lowAvg],['متوسط‌هزینه',summary.mediumQty,summary.mediumPriceTotal,summary.mediumAvg],['پرهزینه',summary.highQty,summary.highPriceTotal,summary.highAvg],['نامشخص',summary.unknownQty,summary.unknownPriceTotal,summary.unknownAvg]];
+  $('categoryBreakdown').querySelector('tbody').innerHTML=catRows.map(([name,qty,amount,avg])=>`<tr><td>${name}</td><td>${faNum(qty)}</td><td>${faNum(amount)}</td><td>${faNum(Math.round(avg))}</td><td>${faNum(summary.priceTotal?amount/summary.priceTotal*100:0)}٪</td></tr>`).join('');
+  $('allQtyTotal').textContent=faNum(summary.totalQty);$('allPriceTotal').textContent=faNum(summary.priceTotal);$('allAvgPrice').textContent=faNum(Math.round(summary.totalAvg));$('allPriceShare').textContent=faNum(summary.priceTotal?100:0)+'٪';
+  $('analysisText').innerHTML='<ul>'+managementLines(summary,filteredRows).map(line=>'<li>'+line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</li>').join('')+'</ul>';
+  const missingP=[...new Set(filteredRows.filter(r=>priceFor(r[4],Number($('priceColumn').value))===null).map(r=>r[4]||'(خالی)'))];
+  const missingC=[...new Set(filteredRows.filter(r=>baseCost(r[3],r[2])===null).map(r=>r[3]||'(خالی)'))];
+  let msg='فیلترها اعمال شد. برای دریافت فایل، روی «دریافت گزارش اکسل» کلیک کنید.';
+  if(missingP.length)msg+='\nهشدار: برای این نوع غذا قیمت پیدا نشد و قیمت آن صفر در نظر گرفته می‌شود: '+missingP.join('، ');
+  if(missingC.length)msg+='\nهشدار: نوع هزینه در ستون D برای این موارد قابل تشخیص نیست؛ هزینه مبنا صفر است: '+missingC.join('، ');
+  $('reportStatus').className='status '+((missingP.length||missingC.length)?'':'ok');$('reportStatus').textContent=msg;
+  $('export').disabled=false;
+ }catch(e){$('reportStatus').className='status err';$('reportStatus').textContent=e.message;}
+}
+async function loadFiles(){
+ const f1=$('dataFile').files[0],f2=$('priceFile').files[0];
+ if(!f1||!f2){$('loadStatus').className='status err';$('loadStatus').textContent='لطفاً هر دو فایل اکسل را انتخاب کنید.';return;}
+ if(!window.XLSX||!window.ExcelJS){$('loadStatus').className='status err';$('loadStatus').textContent='کتابخانه‌های لازم بارگذاری نشده‌اند. اتصال اینترنت را بررسی و صفحه را دوباره باز کنید.';return;}
+ try{
+  $('loadStatus').className='status';$('loadStatus').textContent='در حال خواندن فایل‌ها…';
+  const [drows,prows]=await Promise.all([readSheet(f1),readSheet(f2)]);
+  sourceRows=buildData(drows);priceMap=new Map();
+  const pfirst=prows[0]||[];const priceHeader=norm(pfirst[0]).includes('نوع غذا');
+  for(const r of (priceHeader?prows.slice(1):prows)){const k=norm(cell(r,0));if(k)priceMap.set(k,[cell(r,0),cell(r,1),cell(r,2),cell(r,3),cell(r,4),cell(r,5)]);}
+  if(!sourceRows.length)throw new Error('در فایل اول ردیف داده‌ای پیدا نشد.');
+  fillMulti('canteens',sourceRows.map(r=>r.canteen));fillMulti('meals',sourceRows.map(r=>r.meal));
+  $('loadStatus').className='status ok';$('loadStatus').textContent=`فایل‌ها با موفقیت خوانده شدند.\nتعداد ردیف‌های فایل اطلاعات: ${faNum(sourceRows.length)}\nتعداد نوع غذا در فایل قیمت: ${faNum(priceMap.size)}\nاکنون فیلترها را تنظیم کنید.`;
+  $('refresh').disabled=false;$('export').disabled=false;renderPreview();
+ }catch(e){$('loadStatus').className='status err';$('loadStatus').textContent='خطا در خواندن فایل‌ها: '+e.message;}
+}
+const headers=['نام سلف','تاریخ','وعده','نوع غذا','نام غذا','نام کنار غذا','تعداد رزرو','قیمت انتخابی','مبلغ رزرو','هزینه مبنا','جمع هزینه مبنا','اختلاف هزینه'];
+function toJalali(gDate){
+ const gy=gDate.getFullYear(),gm=gDate.getMonth()+1,gd=gDate.getDate();
+ const gdm=[31,(gy%4===0&&gy%100!==0)||gy%400===0?29:28,31,30,31,30,31,31,30,31,30,31];
+ let gy2=gy-1600,gm2=gm-1,gd2=gd-1;
+ let gdn=365*gy2+Math.floor((gy2+3)/4)-Math.floor((gy2+99)/100)+Math.floor((gy2+399)/400);
+ for(let i=0;i<gm2;i++)gdn+=gdm[i];gdn+=gd2;
+ let jdn=gdn-79,jnp=Math.floor(jdn/12053);jdn%=12053;
+ let jy=979+33*jnp+4*Math.floor(jdn/1461);jdn%=1461;
+ if(jdn>=366){jy+=Math.floor((jdn-1)/365);jdn=(jdn-1)%365;}
+ const jmLens=[31,31,31,31,31,31,30,30,30,30,30,29];let jm=0;
+ while(jm<11&&jdn>=jmLens[jm])jdn-=jmLens[jm++];
+ const jd=jdn+1;
+ return `${jy}/${String(jm+1).padStart(2,'0')}/${String(jd).padStart(2,'0')}`;
+}
+function excelDateValue(v){const d=excelDate(v);return d?toJalali(d):String(v??'');}
+async function exportExcel(){
+ try{
+  renderPreview();if(!$('reportStatus').textContent.startsWith('فیلترها اعمال شد'))return;
+  const workbook=new ExcelJS.Workbook();workbook.creator='گزارش هزینه غذا و رزرو سلف‌ها';workbook.created=new Date();workbook.properties.date1904=false;
+  const ws=workbook.addWorksheet('گزارش نهایی',{views:[{rightToLeft:true,state:'frozen',ySplit:1}]});ws.properties.defaultRowHeight=22;
+  ws.columns=headers.map((h,i)=>({header:h,key:'c'+i,width:[22,15,14,18,28,25,15,18,20,18,22,20][i]}));
+  ws.addRows(filteredRows.map(r=>r.map((v,i)=>i===1?excelDateValue(v):v)));
+  ws.views=[{rightToLeft:true,state:'frozen',ySplit:1}];
+  ws.getRow(1).height=28;
+  ws.eachRow((row,rowNumber)=>{
+   row.eachCell({includeEmpty:true},cell=>{
+    cell.font={name:'B Nazanin',size:12,bold:rowNumber===1,color:rowNumber===1?{argb:'FFFFFFFF'}:{argb:'FF1F2937'}};
+    cell.alignment={vertical:'middle',horizontal:rowNumber===1?'center':(typeof cell.value==='number'?'center':'right'),wrapText:true};
+    cell.border={bottom:{style:'thin',color:{argb:'FFD8E2E8'}}};
+    if(rowNumber===1)cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF176B52'}};
+    else if(rowNumber%2===0)cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFF3F8F5'}};
+   });
+   
+  });
+  // Explicit numeric formats for quantity and money columns.
+  for(let r=2;r<=ws.rowCount;r++){for(const c of [7,8,9,10,11,12])ws.getRow(r).getCell(c).numFmt='#,##0;[Red]-#,##0';}
+  ws.autoFilter={from:{row:1,column:1},to:{row:Math.max(1,ws.rowCount),column:12}};
+  // Separate management summary worksheet
+  const sum=summarizeRows(filteredRows);
+  const sw=workbook.addWorksheet('خلاصه مدیریتی',{views:[{rightToLeft:true,state:'frozen',ySplit:1}]});
+  sw.properties.defaultRowHeight=24;
+  sw.columns=[{width:38},{width:24},{width:30},{width:26}];
+  sw.addRow(['شاخص مدیریتی','مقدار']);
+  const summaryRows=[
+   ['تعداد ردیف‌های گزارش',sum.rows],['تعداد کل پرس',sum.totalQty],['تعداد کل پرس کم‌هزینه',sum.lowQty],['تعداد کل پرس متوسط‌هزینه',sum.mediumQty],['تعداد کل پرس پرهزینه',sum.highQty],['تعداد پرس با نوع هزینه نامشخص',sum.unknownQty],['جمع مبلغ قیمت انتخابی (ستون I)',sum.priceTotal],['جمع هزینه مبنا (ستون K)',sum.baseTotal],['جمع اختلاف هزینه (ستون L)',sum.diffTotal],['سهم پرس‌های پرهزینه از کل پرس‌ها',sum.totalQty?sum.highQty/sum.totalQty:0]
+  ];
+  summaryRows.forEach(r=>sw.addRow(r));
+  sw.addRow([]);sw.addRow(['تفکیک دسته هزینه','تعداد پرس','جمع مبلغ بر اساس قیمت انتخابی','میانگین مبلغ هر پرس']);
+  sw.addRow(['کم‌هزینه',sum.lowQty,sum.lowPriceTotal,sum.lowAvg]);
+  sw.addRow(['متوسط‌هزینه',sum.mediumQty,sum.mediumPriceTotal,sum.mediumAvg]);
+  sw.addRow(['پرهزینه',sum.highQty,sum.highPriceTotal,sum.highAvg]);
+  sw.addRow(['نامشخص',sum.unknownQty,sum.unknownPriceTotal,sum.unknownAvg]);
+  sw.addRow(['جمع کل همه دسته‌ها',sum.totalQty,sum.priceTotal,sum.totalAvg]);
+  sw.addRow([]);sw.addRow(['تحلیل مدیریتی','']);
+  managementLines(sum,filteredRows).forEach(line=>sw.addRow([line,'']));
+  sw.eachRow((row,rowNumber)=>{
+   row.eachCell({includeEmpty:true},cell=>{
+    cell.font={name:'B Nazanin',size:12,bold:rowNumber===1||String(cell.value||'')==='تحلیل مدیریتی',color:rowNumber===1?{argb:'FFFFFFFF'}:{argb:'FF1F2937'}};
+    cell.alignment={vertical:'middle',horizontal:'right',wrapText:true};
+    cell.border={bottom:{style:'thin',color:{argb:'FFD8E2E8'}}};
+    if(rowNumber===1||String(cell.value||'')==='تحلیل مدیریتی')cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF176B52'}};
+    else if(rowNumber%2===0)cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFF3F8F5'}};
+   });
+   if([8,9,10].includes(rowNumber))row.getCell(2).numFmt='#,##0;[Red]-#,##0';
+   if(rowNumber===summaryRows.length+1)row.getCell(2).numFmt='0.0%';
+   const breakdownHeader=summaryRows.length+3;
+   if(rowNumber===breakdownHeader){row.eachCell({includeEmpty:true},cell=>{cell.font={name:'B Nazanin',size:12,bold:true,color:{argb:'FFFFFFFF'}};cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF176B52'}};});}
+   if(rowNumber>=breakdownHeader+1&&rowNumber<=breakdownHeader+5){for(const c of [2,3,4])row.getCell(c).numFmt='#,##0;[Red]-#,##0';}
+   if(rowNumber>breakdownHeader+7)row.height=32;
+  });
+  sw.views=[{rightToLeft:true,state:'frozen',ySplit:1}];
+  const buf=await workbook.xlsx.writeBuffer();
+  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='گزارش_هزینه_غذا_سلف.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+  $('reportStatus').className='status ok';$('reportStatus').textContent='فایل اکسل آماده و دانلود شد.';
+ }catch(e){$('reportStatus').className='status err';$('reportStatus').textContent='خطا در ساخت فایل خروجی: '+e.message;}
+}
+$('dataFile').addEventListener('change',()=>{if($('dataFile').files[0]&&$('priceFile').files[0])loadFiles();});
+$('priceFile').addEventListener('change',()=>{if($('dataFile').files[0]&&$('priceFile').files[0])loadFiles();});
+$('refresh').addEventListener('click',renderPreview);$('export').addEventListener('click',exportExcel);['costHigh','costMedium','costLow'].forEach(id=>$(id).addEventListener('input',()=>{if(sourceRows.length)renderPreview();}));
+</script>
+</body>
+</html>
